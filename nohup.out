@@ -1,0 +1,4 @@
+/opt/homebrew/bin/mysqld_safe: Deprecated program name. It will be removed in a future release, use 'mariadbd-safe' instead
+240802 11:53:44 mysqld_safe Logging to '/opt/homebrew/var/Seullui-MacBookPro.local.err'.
+240802 11:53:44 mysqld_safe Starting mariadbd daemon with databases from /opt/homebrew/var
+/opt/homebrew/bin/mariadbd-safe-helper: Can't create/write to file '/opt/homebrew/var/Seullui-MacBookPro.local.err' (Errcode: 13 "Permission denied")
