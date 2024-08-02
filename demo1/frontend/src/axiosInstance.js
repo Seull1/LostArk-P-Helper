@@ -1,3 +1,4 @@
+// src/axiosInstance.js
 import axios from 'axios';
 
 const accessToken = process.env.VUE_APP_API_TOKEN;
