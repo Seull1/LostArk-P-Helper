@@ -41,11 +41,11 @@
         <h2>오레하 제작 비용 계산기</h2>
         <div class="crafting-grid">
           <div v-for="(recipe, index) in recipes" :key="index" class="crafting-card">
+          <img :src="recipe.Icon" :alt="recipe.Name" class="item-icon"/>
             <div class="crafting-info">
               <h3>{{ recipe.type }} <span class="method">{{ getMethodLabel(recipe.method) }}</span></h3>
               <p>소요 시간: {{ recipe.time }}</p>
               <p>필요 활동력: {{ recipe.energy }} 활동력</p>
-              <p>제작 조건: {{ recipe.conditions }}</p>
               <ul>
                 <li v-for="material in recipe.materials" :key="material.name">
                   {{ material.name }}: {{ material.quantity }}개 (단가: {{ material.unitPrice || '정보 없음' }} 골드)
@@ -96,7 +96,6 @@ export default {
           method: '수렵',
           time: '00:45:00',
           energy: 216,
-          conditions: '제작 공방 Lv.2 달성, 연구소에서 제작법 : 오레하 융화 재료 (수렵) 연구 완료',
           gold: 205,
           quantity: 30,
           materials: [
@@ -110,7 +109,6 @@ export default {
           method: '수렵',
           time: '01:00:00',
           energy: 288,
-          conditions: '제작 공방 Lv.2 달성, 연구소에서 제작법 : 상급 오레하 융화 재료 (수렵) 연구 완료',
           gold: 250,
           quantity: 20,
           materials: [
@@ -124,7 +122,6 @@ export default {
           method: '수렵',
           time: '01:15:00',
           energy: 360,
-          conditions: '제작 공방 Lv.2 달성, 연구소에서 제작법 : 최상급 오레하 융화 재료 (수렵) 연구 완료',
           gold: 300,
           quantity: 15,
           materials: [
@@ -138,7 +135,6 @@ export default {
           method: '낚시',
           time: '00:45:00',
           energy: 216,
-          conditions: '제작 공방 Lv.2 달성, 연구소에서 제작법 : 오레하 융화 재료 (낚시) 연구 완료',
           gold: 80,
           quantity: 30,
           materials: [
@@ -152,7 +148,6 @@ export default {
           method: '낚시',
           time: '01:00:00',
           energy: 288,
-          conditions: '제작 공방 Lv.2 달성, 연구소에서 제작법 : 상급 오레하 융화 재료 (낚시) 연구 완료',
           gold: 250,
           quantity: 20,
           materials: [
@@ -166,7 +161,6 @@ export default {
           method: '낚시',
           time: '01:15:00',
           energy: 360,
-          conditions: '제작 공방 Lv.2 달성, 연구소에서 제작법 : 최상급 오레하 융화 재료 (낚시) 연구 완료',
           gold: 300,
           quantity: 15,
           materials: [
@@ -180,7 +174,6 @@ export default {
           method: '고고학',
           time: '00:45:00',
           energy: 216,
-          conditions: '제작 공방 Lv.2 달성, 연구소에서 제작법 : 오레하 융화 재료 (고고학) 연구 완료',
           gold: 205,
           quantity: 30,
           materials: [
@@ -194,11 +187,10 @@ export default {
           method: '고고학',
           time: '01:00:00',
           energy: 288,
-          conditions: '제작 공방 Lv.2 달성, 연구소에서 제작법 : 상급 오레하 융화 재료 (고고학) 연구 완료',
           gold: 250,
           quantity: 20,
           materials: [
-            { name: '오레하 유물', quantity: 16, unitPrice: 0 },
+            { name: '오레하 유물', quanti연ty: 16, unitPrice: 0 },
             { name: '희귀한 유물', quantity: 29, unitPrice: 0 },
             { name: '고대 유물', quantity: 94, unitPrice: 0 }
           ]
@@ -208,7 +200,6 @@ export default {
           method: '고고학',
           time: '01:15:00',
           energy: 360,
-          conditions: '제작 공방 Lv.2 달성, 연구소에서 제작법 : 최상급 오레하 융화 재료 (고고학) 연구 완료',
           gold: 300,
           quantity: 15,
           materials: [
