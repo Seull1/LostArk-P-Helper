@@ -70,7 +70,7 @@
         </table>
       </section>
 
-      <!-- 생활 전리품 경매장 가격 -->
+      <!-- 생활 전리품 경매장 가격
       <section class="trade-item-prices">
         <h2>생활 전리품 경매장 가격</h2>
         <table v-if="tradeItems.length" class="trade-table">
@@ -88,7 +88,7 @@
           </tbody>
         </table>
         <p v-else>생활 전리품 데이터가 없습니다.</p>
-      </section>
+      </section> -->
     </main>
   </div>
 </template>
@@ -210,7 +210,7 @@ export default {
           gold: 250,
           quantity: 20,
           materials: [
-            { name: '오레하 유물', quanti연ty: 16, unitPrice: 0 },
+            { name: '오레하 유물', quantity: 16, unitPrice: 0 },
             { name: '희귀한 유물', quantity: 29, unitPrice: 0 },
             { name: '고대 유물', quantity: 94, unitPrice: 0 }
           ]
@@ -237,89 +237,85 @@ export default {
     await this.fetchTradeItems();
     this.calculateMaterialPrices();
   },
+  
+
   methods: {
-    async fetchItems() {
-      try {
-        const response = await axiosInstance.post('/markets/items', {
-          Sort: 'GRADE',
-          CategoryCode: 50010,
-          ItemName: '오레하',
-          PageNo: 1,
-          SortCondition: 'ASC',
-        });
+  async fetchItems() {
+    try {
+      const response = await axiosInstance.post('/markets/items', {
+        Sort: 'GRADE',
+        CategoryCode: 50010,
+        ItemName: '오레하',
+        PageNo: 1,
+        SortCondition: 'ASC',
+      });
 
-        const items = response.data.Items;
-        for (const item of items) {
-          const detailsResponse = await axiosInstance.get(`/markets/items/${item.Id}`);
-          const details = detailsResponse.data[0];
-          item.TradeCount = details.Stats[0]?.TradeCount || 'N/A';
-          item.YDayAvgPrice = details.YDayAvgPrice;
-          item.RecentPrice = details.RecentPrice;
+      const items = response.data.Items;
+      for (const item of items) {
+        const detailsResponse = await axiosInstance.get(`/markets/items/${item.Id}`);
+        const details = detailsResponse.data[0];
+        item.TradeCount = details.Stats[0]?.TradeCount || 'N/A';
+        item.YDayAvgPrice = details.YDayAvgPrice;
+        item.RecentPrice = details.RecentPrice;
 
-          // 각 아이템의 marketPrice를 레시피에 매핑
-          const recipe = this.recipes.find(r => r.type.includes(item.Name));
-          if (recipe) {
+        // 각 아이템의 marketPrice를 레시피에 매핑 (이름과 method를 함께 기준으로 함)
+        this.recipes.forEach(recipe => {
+          if (recipe.type.includes(item.Name)) {
             recipe.marketPrice = item.CurrentMinPrice || 0;
           }
-        }
-
-        this.items = items;
-      } catch (error) {
-        console.error('Error fetching items:', error);
-      }
-    },
-
-    async fetchTradeItems() {
-      try {
-        const tradeCodes = [90500, 90600, 90700]; // 수렵, 낚시, 고고학 전리품 코드
-        const requests = tradeCodes.map(code =>
-            axiosInstance.post('/markets/items', {
-              CategoryCode: code,
-              Sort: 'GRADE',
-              PageNo: 1,
-              SortCondition: 'ASC',
-            })
-        );
-
-        const responses = await Promise.all(requests);
-        this.tradeItems = responses.flatMap(response => response.data.Items || []);
-      } catch (error) {
-        console.error('Error fetching trade items:', error);
-      }
-    },
-
-    calculateMaterialPrices() {
-      this.recipes.forEach(recipe => {
-        recipe.materials.forEach(material => {
-          const tradeItem = this.tradeItems.find(item => item.Name === material.name);
-          if (tradeItem && tradeItem.CurrentMinPrice !== undefined) {
-            material.unitPrice = tradeItem.CurrentMinPrice / 100; // 100개 단위로 나누어 단가 계산
-          } else {
-            material.unitPrice = 0; // 값이 없을 때 기본값을 0으로 설정
-          }
         });
-      });
-    },
+      }
 
-    calculateTotalCost(recipe) {
-    // 제작 비용을 전체 재료 가격과 추가 골드 비용으로 계산
+      this.items = items;
+    } catch (error) {
+      console.error('Error fetching items:', error);
+    }
+  },
+
+  async fetchTradeItems() {
+    try {
+      const tradeCodes = [90500, 90600, 90700]; // 수렵, 낚시, 고고학 전리품 코드
+      const requests = tradeCodes.map(code =>
+        axiosInstance.post('/markets/items', {
+          CategoryCode: code,
+          Sort: 'GRADE',
+          PageNo: 1,
+          SortCondition: 'ASC',
+        })
+      );
+
+      const responses = await Promise.all(requests);
+      this.tradeItems = responses.flatMap(response => response.data.Items || []);
+    } catch (error) {
+      console.error('Error fetching trade items:', error);
+    }
+  },
+
+  calculateMaterialPrices() {
+    this.recipes.forEach(recipe => {
+      recipe.materials.forEach(material => {
+        const tradeItem = this.tradeItems.find(item => item.Name === material.name);
+        if (tradeItem && tradeItem.CurrentMinPrice !== undefined) {
+          material.unitPrice = tradeItem.CurrentMinPrice / 100; // 100개 단위로 나누어 단가 계산
+        } else {
+          material.unitPrice = 0; // 값이 없을 때 기본값을 0으로 설정
+        }
+      });
+    });
+  },
+
+  calculateTotalCost(recipe) {
     const materialCost = recipe.materials.reduce((sum, material) => {
       return sum + (material.unitPrice * material.quantity);
     }, 0);
-
-    // 제작에 소요되는 총 비용을 반환 (제작 시 생성된 수량만큼 나눔)
     return ((materialCost + recipe.gold) / recipe.quantity).toFixed(2);
   },
 
   calculateProfit(recipe) {
-    // 총 비용을 계산하고, 이를 통해 이익을 계산
     const totalCostPerUnit = parseFloat(this.calculateTotalCost(recipe));
     const marketPricePerUnit = parseFloat(recipe.marketPrice);
 
-    // 단위 당 이익 계산
     const profit = marketPricePerUnit - totalCostPerUnit;
-
-    // 수익 값을 저장해둠
     recipe.useProfit = profit;
     recipe.sellProfit = profit;
 
@@ -327,31 +323,35 @@ export default {
   },
 
   calculateCostRate(recipe) {
-    // 원가 대비 이익률 계산
     const profit = parseFloat(this.calculateProfit(recipe));
     const totalCost = parseFloat(this.calculateTotalCost(recipe));
     return ((profit / totalCost) * 100).toFixed(2);
   },
 
-    calculateEnergyRate(recipe) {
-      const profit = parseFloat(this.calculateProfit(recipe));
-      return ((profit / recipe.energy) * 100).toFixed(2);
-    },
+  calculateEnergyRate(recipe) {
+    const profit = parseFloat(this.calculateProfit(recipe));
+    return ((profit / recipe.energy) * 100).toFixed(2);
+  },
 
-    getMethodLabel(method) {
-      const methods = {
-        '수렵': '수렵',
-        '낚시': '낚시',
-        '고고학': '고고학',
-      };
-      return methods[method];
-    },
+  getMethodLabel(method) {
+    const methods = {
+      '수렵': '수렵',
+      '낚시': '낚시',
+      '고고학': '고고학',
+    };
+    return methods[method];
+  },
 
-    getProfitClass(recipe, type) {
-      const profit = type === 'use' ? recipe.useProfit : recipe.sellProfit;
-      return profit > 0 ? 'profit-positive' : 'profit-negative';
-    }
+  getProfitClass(recipe, type) {
+    const profit = type === 'use' ? recipe.useProfit : recipe.sellProfit;
+    return profit > 0 ? 'profit-positive' : 'profit-negative';
   }
+}
+
+
+
+
+
 };
 </script>
 
