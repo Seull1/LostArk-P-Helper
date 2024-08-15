@@ -1,4 +1,4 @@
-# LostArk-P-Helperasd
+# LostArk-P-Helper
 
 Start 2024-08-01
 
