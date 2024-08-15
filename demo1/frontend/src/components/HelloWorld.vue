@@ -17,16 +17,12 @@
     <main class="main-content">
       <!-- 오레하 아이템 목록 -->
       <section class="item-list">
-        <h1>오레하 아이템 목록</h1>
+        <!-- <h1>오레하 아이템 목록</h1> -->
         <div v-if="items.length">
           <ul>
             <li v-for="item in items" :key="item.Id" class="item-card">
               <img :src="item.Icon" :alt="item.Name" class="item-icon"/>
               <div class="item-info">
-                <p>이름: {{ item.Name }}</p>
-                <p>등급: {{ item.Grade }}</p>
-                <p>어제 평균 가격: {{ item.YDayAvgPrice }}</p>
-                <p>최근 가격: {{ item.RecentPrice }}</p>
                 <p>현재 최소 가격: {{ item.CurrentMinPrice }}</p>
                 <p>최근 거래량: {{ item.TradeCount || 'N/A' }}</p>
               </div>
@@ -355,27 +351,43 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f5f5f5;
+  color: #34495e;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
-  font-family: Arial, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 20px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #2c3e50;
+  background-color: #273c75;
   color: white;
-  padding: 10px 20px;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .nav ul {
@@ -387,46 +399,32 @@ export default {
 .nav ul li a {
   color: white;
   text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav ul li a:hover {
+  color: #fbc531;
 }
 
 .main-content {
   padding: 20px;
-  background-color: #ecf0f1;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.item-list {
-  margin-bottom: 40px;
-}
 
-.item-card {
-  display: flex;
-  align-items: center;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
-.item-icon {
-  width: 50px;
-  height: 50px;
-  margin-right: 20px;
-  border-radius: 10px;
-}
-
-.item-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.item-info p {
-  margin: 0;
-}
 
 .crafting-calculator {
   margin-bottom: 40px;
+}
+
+.crafting-calculator h2 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-size: 22px;
 }
 
 .recipe-table {
@@ -437,9 +435,21 @@ export default {
 
 .recipe-table th,
 .recipe-table td {
-  padding: 10px;
+  padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #dfe6e9;
+  font-weight: 500;
+}
+
+.recipe-table th {
+  background-color: #273c75;
+  color: white;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.recipe-table td {
+  background-color: white;
 }
 
 .recipe-info {
@@ -451,13 +461,31 @@ export default {
   width: 40px;
   height: 40px;
   margin-right: 10px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 
+.profit-positive {
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.profit-negative {
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+/* 호버 시 배경 강조 */
+.recipe-table tr:hover td {
+  background-color: #f5f6fa;
+}
+
+/* 전체 레이아웃 */
 .trade-item-prices {
-  background-color: #fff;
+  background-color: #ffffff;
   border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .trade-table {
@@ -468,21 +496,72 @@ export default {
 
 .trade-table th,
 .trade-table td {
-  border: 1px solid #ccc;
-  padding: 10px;
+  border: 1px solid #dfe6e9;
+  padding: 12px 15px;
   text-align: left;
 }
 
-.trade-table th {
-  background-color: #f8f8f8;
+
+.item-list {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.profit-positive {
-  color: green;
+.item-list h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
 }
 
-.profit-negative {
-  color: red;
+.item-card {
+  display: inline-flex;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
 }
+
+.item-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.item-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  margin-right: 12px;
+  object-fit: cover;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.item-info p {
+  margin: 2px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.item-info p:first-child {
+  font-weight: bold;
+  color: #333;
+}
+
+.item-info p:last-child {
+  color: #007bff;
+}
+
 
 </style>
