@@ -39,23 +39,35 @@
       <!-- 오레하 제작 비용 계산기 -->
       <section class="crafting-calculator">
         <h2>오레하 제작 비용 계산기</h2>
-        <div class="crafting-grid">
-          <div v-for="(recipe, index) in recipes" :key="index" class="crafting-card">
-          <img :src="recipe.Icon" :alt="recipe.Name" class="item-icon"/>
-            <div class="crafting-info">
-              <h3>{{ recipe.type }} <span class="method">{{ getMethodLabel(recipe.method) }}</span></h3>
-              <p>소요 시간: {{ recipe.time }}</p>
-              <p>필요 활동력: {{ recipe.energy }} 활동력</p>
-              <ul>
-                <li v-for="material in recipe.materials" :key="material.name">
-                  {{ material.name }}: {{ material.quantity }}개 (단가: {{ material.unitPrice || '정보 없음' }} 골드)
-                </li>
-              </ul>
-              <p>골드: {{ recipe.gold }} 골드</p>
-              <p>1개 제작 비용: {{ calculateUnitCost(recipe) }} 골드</p>
-            </div>
-          </div>
-        </div>
+        <table class="recipe-table">
+          <thead>
+            <tr>
+              <th>레시피</th>
+              <th>시세</th>
+              <th>제작 비용</th>
+              <th>판매 차익</th>
+              <th>원가 이익률</th>
+              <th>활동력 이익률</th>
+              <th>직접 사용</th>
+              <th>판매</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="recipe in recipes" :key="recipe.type">
+              <td class="recipe-info">
+                <img :src="recipe.icon" alt="Recipe Image" class="recipe-icon" />
+                <span>{{ recipe.type }} ({{ getMethodLabel(recipe.method) }})</span>
+              </td>
+              <td>{{ recipe.marketPrice }} 골드</td>
+              <td>{{ (calculateTotalCost(recipe) / recipe.quantity).toFixed(2)}} 골드</td>
+              <td>{{ (calculateProfit(recipe) / recipe.quantity).toFixed(2) }} 골드</td>
+              <td>{{ calculateCostRate(recipe) }}%</td>
+              <td>{{ calculateEnergyRate(recipe) }}%</td>
+              <td :class="getProfitClass(recipe, 'use')">{{ recipe.useProfit > 0 ? '이득' : '손해' }}</td>
+              <td :class="getProfitClass(recipe, 'sell')">{{ recipe.sellProfit > 0 ? '이득' : '손해' }}</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
 
       <!-- 생활 전리품 경매장 가격 -->
@@ -63,16 +75,16 @@
         <h2>생활 전리품 경매장 가격</h2>
         <table v-if="tradeItems.length" class="trade-table">
           <thead>
-          <tr>
-            <th>아이템</th>
-            <th>최소 가격 (골드)</th>
-          </tr>
+            <tr>
+              <th>아이템</th>
+              <th>최소 가격 (골드)</th>
+            </tr>
           </thead>
           <tbody>
-          <tr v-for="item in tradeItems" :key="item.Id">
-            <td>{{ item.Name }}</td>
-            <td>{{ item.CurrentMinPrice !== undefined ? item.CurrentMinPrice : '정보 없음' }}</td>
-          </tr>
+            <tr v-for="item in tradeItems" :key="item.Id">
+              <td>{{ item.Name }}</td>
+              <td>{{ item.CurrentMinPrice !== undefined ? item.CurrentMinPrice : '정보 없음' }}</td>
+            </tr>
           </tbody>
         </table>
         <p v-else>생활 전리품 데이터가 없습니다.</p>
@@ -93,6 +105,7 @@ export default {
       recipes: [
         {
           type: '오레하 융화 재료',
+          icon: 'https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_71.png', // 이미지 URL 추가
           method: '수렵',
           time: '00:45:00',
           energy: 216,
@@ -106,6 +119,7 @@ export default {
         },
         {
           type: '상급 오레하 융화 재료',
+          icon: 'https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_8_109.png',
           method: '수렵',
           time: '01:00:00',
           energy: 288,
@@ -119,6 +133,7 @@ export default {
         },
         {
           type: '최상급 오레하 융화 재료',
+          icon: 'https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_11_29.png',
           method: '수렵',
           time: '01:15:00',
           energy: 360,
@@ -132,6 +147,7 @@ export default {
         },
         {
           type: '오레하 융화 재료',
+          icon: 'https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_71.png',
           method: '낚시',
           time: '00:45:00',
           energy: 216,
@@ -145,6 +161,7 @@ export default {
         },
         {
           type: '상급 오레하 융화 재료',
+          icon: 'https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_8_109.png',
           method: '낚시',
           time: '01:00:00',
           energy: 288,
@@ -158,6 +175,7 @@ export default {
         },
         {
           type: '최상급 오레하 융화 재료',
+          icon: 'https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_11_29.png',
           method: '낚시',
           time: '01:15:00',
           energy: 360,
@@ -171,6 +189,7 @@ export default {
         },
         {
           type: '오레하 융화 재료',
+          icon: 'https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_71.png',
           method: '고고학',
           time: '00:45:00',
           energy: 216,
@@ -184,6 +203,7 @@ export default {
         },
         {
           type: '상급 오레하 융화 재료',
+          icon: 'https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_8_109.png',
           method: '고고학',
           time: '01:00:00',
           energy: 288,
@@ -197,6 +217,7 @@ export default {
         },
         {
           type: '최상급 오레하 융화 재료',
+          icon: 'https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_11_29.png',
           method: '고고학',
           time: '01:15:00',
           energy: 360,
@@ -234,6 +255,12 @@ export default {
           item.TradeCount = details.Stats[0]?.TradeCount || 'N/A';
           item.YDayAvgPrice = details.YDayAvgPrice;
           item.RecentPrice = details.RecentPrice;
+
+          // 각 아이템의 marketPrice를 레시피에 매핑
+          const recipe = this.recipes.find(r => r.type.includes(item.Name));
+          if (recipe) {
+            recipe.marketPrice = item.CurrentMinPrice || 0;
+          }
         }
 
         this.items = items;
@@ -241,6 +268,7 @@ export default {
         console.error('Error fetching items:', error);
       }
     },
+
     async fetchTradeItems() {
       try {
         const tradeCodes = [90500, 90600, 90700]; // 수렵, 낚시, 고고학 전리품 코드
@@ -259,36 +287,69 @@ export default {
         console.error('Error fetching trade items:', error);
       }
     },
+
     calculateMaterialPrices() {
       this.recipes.forEach(recipe => {
         recipe.materials.forEach(material => {
           const tradeItem = this.tradeItems.find(item => item.Name === material.name);
           if (tradeItem && tradeItem.CurrentMinPrice !== undefined) {
-            material.unitPrice = tradeItem.CurrentMinPrice;
+            material.unitPrice = tradeItem.CurrentMinPrice / 100; // 100개 단위로 나누어 단가 계산
           } else {
-            console.warn(`Item not found or price unavailable for: ${material.name}`);
-            material.unitPrice = '정보 없음';
+            material.unitPrice = 0; // 값이 없을 때 기본값을 0으로 설정
           }
         });
       });
     },
+
     calculateTotalCost(recipe) {
-      const materialCost = recipe.materials.reduce((sum, material) => {
-        return sum + (material.unitPrice === '정보 없음' ? 0 : material.unitPrice * material.quantity);
-      }, 0);
-      return materialCost + recipe.gold;
+    // 제작 비용을 전체 재료 가격과 추가 골드 비용으로 계산
+    const materialCost = recipe.materials.reduce((sum, material) => {
+      return sum + (material.unitPrice * material.quantity);
+    }, 0);
+
+    // 제작에 소요되는 총 비용을 반환 (제작 시 생성된 수량만큼 나눔)
+    return ((materialCost + recipe.gold) / recipe.quantity).toFixed(2);
+  },
+
+  calculateProfit(recipe) {
+    // 총 비용을 계산하고, 이를 통해 이익을 계산
+    const totalCostPerUnit = parseFloat(this.calculateTotalCost(recipe));
+    const marketPricePerUnit = parseFloat(recipe.marketPrice);
+
+    // 단위 당 이익 계산
+    const profit = marketPricePerUnit - totalCostPerUnit;
+
+    // 수익 값을 저장해둠
+    recipe.useProfit = profit;
+    recipe.sellProfit = profit;
+
+    return profit.toFixed(2);
+  },
+
+  calculateCostRate(recipe) {
+    // 원가 대비 이익률 계산
+    const profit = parseFloat(this.calculateProfit(recipe));
+    const totalCost = parseFloat(this.calculateTotalCost(recipe));
+    return ((profit / totalCost) * 100).toFixed(2);
+  },
+
+    calculateEnergyRate(recipe) {
+      const profit = parseFloat(this.calculateProfit(recipe));
+      return ((profit / recipe.energy) * 100).toFixed(2);
     },
-    calculateUnitCost(recipe) {
-      const totalCost = this.calculateTotalCost(recipe);
-      return (totalCost / recipe.quantity).toFixed(2);
-    },
+
     getMethodLabel(method) {
       const methods = {
-        '수렵': '(수렵)',
-        '낚시': '(낚시)',
-        '고고학': '(고고학)',
+        '수렵': '수렵',
+        '낚시': '낚시',
+        '고고학': '고고학',
       };
       return methods[method];
+    },
+
+    getProfitClass(recipe, type) {
+      const profit = type === 'use' ? recipe.useProfit : recipe.sellProfit;
+      return profit > 0 ? 'profit-positive' : 'profit-negative';
     }
   }
 };
@@ -368,18 +429,28 @@ export default {
   margin-bottom: 40px;
 }
 
-.crafting-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+.recipe-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
 
-.crafting-card {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.recipe-table th,
+.recipe-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.recipe-info {
+  display: flex;
+  align-items: center;
+}
+
+.recipe-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
 }
 
 .trade-item-prices {
@@ -405,4 +476,13 @@ export default {
 .trade-table th {
   background-color: #f8f8f8;
 }
+
+.profit-positive {
+  color: green;
+}
+
+.profit-negative {
+  color: red;
+}
+
 </style>
