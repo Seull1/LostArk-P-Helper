@@ -23,7 +23,7 @@
             <li v-for="item in items" :key="item.Id" class="item-card">
               <img :src="item.Icon" :alt="item.Name" class="item-icon"/>
               <div class="item-info">
-                <p>현재 최소 가격: {{ item.CurrentMinPrice }}</p>
+                <p>현재 최소 가격: {{ item.CurrentMinPrice }}<span style="color: #FFD700" >G</span></p>
                 <p>최근 거래량: {{ item.TradeCount || 'N/A' }}</p>
               </div>
             </li>
@@ -41,6 +41,7 @@
               <th>레시피</th>
               <th>시세</th>
               <th>제작 비용</th>
+              <th>개당 제작 비용</th>
               <th>판매 차익</th>
               <th>원가 이익률</th>
               <th>활동력 이익률</th>
@@ -55,6 +56,7 @@
                 <span>{{ recipe.type }} ({{ getMethodLabel(recipe.method) }})</span>
               </td>
               <td>{{ recipe.marketPrice }} 골드</td>
+              <td>{{ calculateTotalCost(recipe) }} 골드</td>
               <td>{{ (calculateTotalCost(recipe) / recipe.quantity).toFixed(2)}} 골드</td>
               <td>{{ (calculateProfit(recipe) / recipe.quantity).toFixed(2) }} 골드</td>
               <td>{{ calculateCostRate(recipe) }}%</td>
