@@ -303,47 +303,45 @@ export default {
   },
 
   calculateTotalCost(recipe) {
-    const materialCost = recipe.materials.reduce((sum, material) => {
-      return sum + (material.unitPrice * material.quantity);
-    }, 0);
-    return ((materialCost + recipe.gold) / recipe.quantity).toFixed(2);
-  },
+      const materialCost = recipe.materials.reduce((sum, material) => {
+        return sum + (material.unitPrice * material.quantity);
+      }, 0);
+      return ((materialCost + recipe.gold) / recipe.quantity).toFixed(2);
+    },
+    calculateProfit(recipe) {
+      const totalCostPerUnit = parseFloat(this.calculateTotalCost(recipe));
+      const marketPricePerUnit = parseFloat(recipe.marketPrice);
 
-  calculateProfit(recipe) {
-    const totalCostPerUnit = parseFloat(this.calculateTotalCost(recipe));
-    const marketPricePerUnit = parseFloat(recipe.marketPrice);
+      // 수수료 계산 (판매 가격의 5%, 최소 1골드)
+      const fee = Math.max(marketPricePerUnit * 0.05, 1);
+      const profit = marketPricePerUnit - fee - totalCostPerUnit;
 
-    const profit = marketPricePerUnit - totalCostPerUnit;
-    recipe.useProfit = profit;
-    recipe.sellProfit = profit;
+      recipe.sellProfit = profit;
+      recipe.useProfit = marketPricePerUnit - totalCostPerUnit; // 직접 사용 시 수수료 없음
 
-    return profit.toFixed(2);
-  },
-
-  calculateCostRate(recipe) {
-    const profit = parseFloat(this.calculateProfit(recipe));
-    const totalCost = parseFloat(this.calculateTotalCost(recipe));
-    return ((profit / totalCost) * 100).toFixed(2);
-  },
-
-  calculateEnergyRate(recipe) {
-    const profit = parseFloat(this.calculateProfit(recipe));
-    return ((profit / recipe.energy) * 100).toFixed(2);
-  },
-
-  getMethodLabel(method) {
-    const methods = {
-      '수렵': '수렵',
-      '낚시': '낚시',
-      '고고학': '고고학',
-    };
-    return methods[method];
-  },
-
-  getProfitClass(recipe, type) {
-    const profit = type === 'use' ? recipe.useProfit : recipe.sellProfit;
-    return profit > 0 ? 'profit-positive' : 'profit-negative';
-  }
+      return profit.toFixed(2);
+    },
+    calculateCostRate(recipe) {
+      const profit = parseFloat(this.calculateProfit(recipe));
+      const totalCost = parseFloat(this.calculateTotalCost(recipe));
+      return ((profit / totalCost) * 100).toFixed(2);
+    },
+    calculateEnergyRate(recipe) {
+      const profit = parseFloat(this.calculateProfit(recipe));
+      return ((profit / recipe.energy) * 100).toFixed(2);
+    },
+    getMethodLabel(method) {
+      const methods = {
+        '수렵': '수렵',
+        '낚시': '낚시',
+        '고고학': '고고학',
+      };
+      return methods[method];
+    },
+    getProfitClass(recipe, type) {
+      const profit = type === 'use' ? recipe.useProfit : recipe.sellProfit;
+      return profit > 0 ? 'profit-positive' : 'profit-negative';
+    }
 }
 
 
