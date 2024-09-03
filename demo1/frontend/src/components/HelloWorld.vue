@@ -93,6 +93,8 @@
 
 <script>
 import axiosInstance from '../axiosInstance';
+//import axios from 'axios';
+
 
 export default {
   name: 'LostArkMarketplace',
@@ -313,14 +315,27 @@ export default {
       const marketPricePerUnit = parseFloat(recipe.marketPrice);
 
       // 수수료 계산 (판매 가격의 5%, 최소 1골드)
-      const fee = Math.max(marketPricePerUnit * 0.05, 1);
-      const profit = marketPricePerUnit - fee - totalCostPerUnit;
+      //const fee = Math.max(marketPricePerUnit * 0.05, 1);
+      //const profit = marketPricePerUnit - fee - totalCostPerUnit;
+
+      // 수수료 계산 (판매 가격의 5%, 반올림 적용, 최소 1골드)
+const rawFee = marketPricePerUnit * 0.05;
+const roundedFee = Math.max(Math.round(rawFee), 1); // 반올림 및 최소 1골드 적용
+
+// 수수료를 반올림된 후 1, 2, 3 단위로 계산
+const fee = Math.ceil(roundedFee) - (roundedFee % 1 < 0.5 ? 0 : 1);
+
+// 최종 판매 차익 계산
+const profit = marketPricePerUnit - fee - totalCostPerUnit;
+
 
       recipe.sellProfit = profit;
       recipe.useProfit = marketPricePerUnit - totalCostPerUnit; // 직접 사용 시 수수료 없음
 
       return profit.toFixed(2);
     },
+
+    
     calculateCostRate(recipe) {
       const profit = parseFloat(this.calculateProfit(recipe));
       const totalCost = parseFloat(this.calculateTotalCost(recipe));

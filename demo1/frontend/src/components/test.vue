@@ -38,26 +38,26 @@
         <table class="recipe-table">
           <thead>
             <tr>
-              <th @click="sortTable('type')">레시피</th>
-              <th @click="sortTable('marketPrice')">시세</th>
-              <th @click="sortTable('totalCost')">제작 비용</th>
-              <th @click="sortTable('unitCost')">개당 제작 비용</th>
-              <th @click="sortTable('profit')">판매 차익</th>
-              <th @click="sortTable('costRate')">원가 이익률</th>
-              <th @click="sortTable('energyRate')">활동력 이익률</th>
-              <th @click="sortTable('useProfit')">직접 사용</th>
-              <th @click="sortTable('sellProfit')">판매</th>
+              <th @click="sortTable('type')">레시피 <span :class="getSortIcon('type')"></span></th>
+              <th @click="sortTable('marketPrice')">시세 <span :class="getSortIcon('marketPrice')"></span></th>
+              <th @click="sortTable('totalCost')">제작 비용 <span :class="getSortIcon('totalCost')"></span></th>
+              <th @click="sortTable('perUnitCost')">개당 제작 비용 <span :class="getSortIcon('perUnitCost')"></span></th>
+              <th @click="sortTable('profit')">판매 차익 <span :class="getSortIcon('profit')"></span></th>
+              <th @click="sortTable('costRate')">원가 이익률 <span :class="getSortIcon('costRate')"></span></th>
+              <th @click="sortTable('energyRate')">활동력 이익률 <span :class="getSortIcon('energyRate')"></span></th>
+              <th>직접 사용</th>
+              <th>판매</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="recipe in recipes" :key="recipe.type">
+            <tr v-for="recipe in sortedRecipes" :key="recipe.type">
               <td class="recipe-info">
                 <img :src="recipe.icon" alt="Recipe Image" class="recipe-icon" />
                 <span>{{ recipe.type }} ({{ getMethodLabel(recipe.method) }})</span>
               </td>
               <td>{{ recipe.marketPrice }} 골드</td>
               <td>{{ calculateTotalCost(recipe) }} 골드</td>
-              <td>{{ (calculateTotalCost(recipe) / recipe.quantity).toFixed(2)}} 골드</td>
+              <td>{{ (calculateTotalCost(recipe) / recipe.quantity).toFixed(2) }} 골드</td>
               <td>{{ (calculateProfit(recipe) / recipe.quantity).toFixed(2) }} 골드</td>
               <td>{{ calculateCostRate(recipe) }}%</td>
               <td>{{ calculateEnergyRate(recipe) }}%</td>
@@ -227,7 +227,9 @@ export default {
             { name: '고대 유물', quantity: 107, unitPrice: 0 }
           ]
         }
-      ]
+      ],
+      sortKey: 'profit',
+      sortOrder: 'desc',
     };
   },
   async mounted() {
@@ -236,6 +238,22 @@ export default {
     this.calculateMaterialPrices();
   },
   
+
+  computed: {
+    sortedRecipes() {
+      return [...this.recipes].sort((a, b) => {
+        const modifier = this.sortOrder === 'asc' ? 1 : -1;
+        if (
+          ['profit', 'costRate', 'energyRate', 'marketPrice', 'totalCost', 'perUnitCost'].includes(this.sortKey)
+        ) {
+          return (a[this.sortKey] - b[this.sortKey]) * modifier;
+        } else if (typeof a[this.sortKey] === 'string') {
+          return a[this.sortKey].localeCompare(b[this.sortKey]) * modifier;
+        }
+        return (a[this.sortKey] - b[this.sortKey]) * modifier;
+      });
+    },
+  },
 
   methods: {
   async fetchItems() {
@@ -289,6 +307,22 @@ export default {
     }
   },
 
+
+  sortTable(key) {
+      if (this.sortKey === key) {
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortKey = key;
+        this.sortOrder = 'desc'; // 기본은 내림차순
+      }
+    },
+    getSortIcon(key) {
+      if (this.sortKey === key) {
+        return this.sortOrder === 'asc' ? '▲' : '▼';
+      }
+      return '';
+    },
+
   calculateMaterialPrices() {
     this.recipes.forEach(recipe => {
       recipe.materials.forEach(material => {
@@ -303,47 +337,45 @@ export default {
   },
 
   calculateTotalCost(recipe) {
-    const materialCost = recipe.materials.reduce((sum, material) => {
-      return sum + (material.unitPrice * material.quantity);
-    }, 0);
-    return ((materialCost + recipe.gold) / recipe.quantity).toFixed(2);
-  },
+      const materialCost = recipe.materials.reduce((sum, material) => {
+        return sum + (material.unitPrice * material.quantity);
+      }, 0);
+      return ((materialCost + recipe.gold) / recipe.quantity).toFixed(2);
+    },
+    calculateProfit(recipe) {
+      const totalCostPerUnit = parseFloat(this.calculateTotalCost(recipe));
+      const marketPricePerUnit = parseFloat(recipe.marketPrice);
 
-  calculateProfit(recipe) {
-    const totalCostPerUnit = parseFloat(this.calculateTotalCost(recipe));
-    const marketPricePerUnit = parseFloat(recipe.marketPrice);
+      // 수수료 계산 (판매 가격의 5%, 최소 1골드)
+      const fee = Math.max(marketPricePerUnit * 0.05, 1);
+      const profit = marketPricePerUnit - fee - totalCostPerUnit;
 
-    const profit = marketPricePerUnit - totalCostPerUnit;
-    recipe.useProfit = profit;
-    recipe.sellProfit = profit;
+      recipe.sellProfit = profit;
+      recipe.useProfit = marketPricePerUnit - totalCostPerUnit; // 직접 사용 시 수수료 없음
 
-    return profit.toFixed(2);
-  },
-
-  calculateCostRate(recipe) {
-    const profit = parseFloat(this.calculateProfit(recipe));
-    const totalCost = parseFloat(this.calculateTotalCost(recipe));
-    return ((profit / totalCost) * 100).toFixed(2);
-  },
-
-  calculateEnergyRate(recipe) {
-    const profit = parseFloat(this.calculateProfit(recipe));
-    return ((profit / recipe.energy) * 100).toFixed(2);
-  },
-
-  getMethodLabel(method) {
-    const methods = {
-      '수렵': '수렵',
-      '낚시': '낚시',
-      '고고학': '고고학',
-    };
-    return methods[method];
-  },
-
-  getProfitClass(recipe, type) {
-    const profit = type === 'use' ? recipe.useProfit : recipe.sellProfit;
-    return profit > 0 ? 'profit-positive' : 'profit-negative';
-  }
+      return profit.toFixed(2);
+    },
+    calculateCostRate(recipe) {
+      const profit = parseFloat(this.calculateProfit(recipe));
+      const totalCost = parseFloat(this.calculateTotalCost(recipe));
+      return ((profit / totalCost) * 100).toFixed(2);
+    },
+    calculateEnergyRate(recipe) {
+      const profit = parseFloat(this.calculateProfit(recipe));
+      return ((profit / recipe.energy) * 100).toFixed(2);
+    },
+    getMethodLabel(method) {
+      const methods = {
+        '수렵': '수렵',
+        '낚시': '낚시',
+        '고고학': '고고학',
+      };
+      return methods[method];
+    },
+    getProfitClass(recipe, type) {
+      const profit = type === 'use' ? recipe.useProfit : recipe.sellProfit;
+      return profit > 0 ? 'profit-positive' : 'profit-negative';
+    }
 }
 
 
